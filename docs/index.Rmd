@@ -2,14 +2,21 @@
 title: "Fulmore River Sockeye Salmon Smolt Enumeration"
 author: "Eric V"
 date: "`r Sys.Date()`"
-output: bookdown::html_document2
+output: 
+  
+  html_document:
+    fig_caption: true
+    code_folding: "show"
+    toc: true
+    toc_float: true
+
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-## Project Background
+# Project Background
 
 This is a live document intended to share information about juvenile salmon captured in the Fulmore River by rotary screw trap. The Fulmore River is located in the traditional territory of the Tlowitsis First Nation, at the head of Port Neville, approximately 80 NE of Campbell River. The trap was installed on April 11-12 and will fish roughly 5-days a week (Monday to Friday) until June 15, 2024. All fish captured in the trap will be identified to species and measured for fork length. Biological samples will be collected from a subset of fish each day, including weight, scales and DNA samples. 
 
@@ -25,9 +32,10 @@ This is a live document intended to share information about juvenile salmon capt
     library(readxl)
     library(kableExtra)
     library(markdown)
+    library(captioner)
 
 ## Define Working Directory ---
-setwd("C:/Users/evogt/R Analysis/EAV/GitHubMarkdown/Fulmore")
+setwd("C:/Users/evogt/R Analysis/EAV/GitHubMarkdown/Fulmore/docs/")
 
 ## Define and Load Input Files
   #1. PacFish Temp and Flow Data
@@ -63,7 +71,7 @@ setwd("C:/Users/evogt/R Analysis/EAV/GitHubMarkdown/Fulmore")
 
 ```
 
-## Captures to Date
+# Captures to Date
 
 Since April 15, the trap has fished for a total of `r (length(unique(catch_dat$Date)))` days, resulting in the capture of Sockeye Salmon, Coho Salmon, Chum Salmon, Coastal Cutthroat Trout, Dolly Varden Char, Pacific Lamprey and Sculpin (Cottidae spp.)
  
@@ -109,7 +117,7 @@ kable(tally.table,
 ```
 
 
-### Sockeye Salmon
+## Sockeye Salmon
 
 The length-frequency distribution for Sockeye Salmon smolts is bimodal, suggesting two groups of different sized fish are emigrating simultaneously. Scale aging will be required to assess what is contributing to this observed difference. However, it is likely be explained by: 
 
@@ -119,7 +127,7 @@ The length-frequency distribution for Sockeye Salmon smolts is bimodal, suggesti
 
   
 
-```{r SK_FL, echo = FALSE, warning = FALSE, message = FALSE, out.width= "1500px", fig.cap = "**Length-frequency distribution for Sockeye Salmon captured in the Fulmore River.**"}
+```{r SK_FL, echo = FALSE, warning = FALSE, fig.cap = "Length-frequency distribution for Sockeye Salmon captured in the Fulmore River.", message = FALSE, out.width= "1500px"}
 ## Prepare Plots ----
 ## * Length Frequency Plots  ----  
 ## ** Prepare Data
@@ -157,7 +165,7 @@ The length-frequency distribution for Sockeye Salmon smolts is bimodal, suggesti
         
 ## ** Prepare Daily Length Frequency Plots
     ## Faceted by Day
-    daily_fl <- ggplot(total_daily) + 
+    daily_fl.plot <- ggplot(total_daily) + 
                    geom_col(aes(x = Length, y = Count)) + 
                     labs(x = "Fork Lenght (mm)", y = "Frequency (# Fish)") +
                     scale_x_continuous(breaks = seq(76, 166, by = 2))+
@@ -167,7 +175,7 @@ The length-frequency distribution for Sockeye Salmon smolts is bimodal, suggesti
                     facet_grid(Date ~.)
 
     ## Faceted by Week
-    weekly_fl <- ggplot(total_weekly) + 
+    weekly_fl.plot <- ggplot(total_weekly) + 
                     geom_col(aes(x = Length, y = Count)) + 
                       labs(x = "Fork Lenght (mm)", y = "Frequency (# Fish)") +
                       scale_x_continuous(breaks = seq(76, 166, by = 2))+
@@ -177,12 +185,13 @@ The length-frequency distribution for Sockeye Salmon smolts is bimodal, suggesti
     
 ## ** Select Figures to Display
     
-    daily_fl
+    daily_fl.plot
     
     # weekly_fl
 ```                  
 
-```{r total catches, out.width = "1500px", fig.cap = "**Total catches of Sockeye Salmon, Coho Salmon and Chum Salmon per day.**", echo = FALSE, message = FALSE, warning = FALSE}
+
+```{r total catches, out.width = "1500px", fig.cap = "Total catches of Sockeye Salmon, Coho Salmon and Chum Salmon per day.", echo = FALSE, message = FALSE, warning = FALSE}
 ## * Total Captures Plot ----
     ## Prep Blank Date Data  
     date_seq <- data.frame(Date = rep(seq(ymd('2024-04-15'), ymd('2024-06-15'), by = 'days'), each = 3)) %>%
@@ -215,14 +224,15 @@ The length-frequency distribution for Sockeye Salmon smolts is bimodal, suggesti
                                                       # "Pacific Lamprey"))) 
 
     ## Prepare Plot
-    ggplot(daily_tally) +
-            geom_col(aes(x = Date, y = Count)) +
-            labs(x = "Date", y = "Total Captures (# Fish)") +
-            scale_x_date(date_breaks = "1 week", date_labels = "%d-%b") +
-            plottheme() +
-            facet_grid(Species ~.)
-      
-            
+    daily_tally.plot <- ggplot(daily_tally) +
+                          geom_col(aes(x = Date, y = Count)) +
+                          labs(x = "Date", y = "Total Captures (# Fish)") +
+                          scale_x_date(date_breaks = "1 week", date_labels = "%d-%b") +
+                          plottheme() +
+                          facet_grid(Species ~.)
+    
+    daily_tally.plot
 
 ```
+
 

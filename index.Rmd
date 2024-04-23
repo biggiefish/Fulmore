@@ -1,5 +1,5 @@
 ---
-title: "Fulmore RST 2024"
+title: "Fulmore River Sockeye Salmon Smolt Enumeration"
 author: "Eric V"
 date: "`r Sys.Date()`"
 output: bookdown::html_document2
@@ -8,8 +8,6 @@ output: bookdown::html_document2
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
-
-# Fulmore River Sockeye Salmon Smolt Enumeration
 
 ## Project Background
 
@@ -113,7 +111,7 @@ kable(tally.table,
 
 ### Sockeye Salmon
 
-The length-frequency distribution for Sockeye Salmon smolts is bimodal, indicating that two groups of fish of consistently different size are emigrating. Scale aging will be required to assess what is contributing to this observed difference. However, it is likely be explained by: 
+The length-frequency distribution for Sockeye Salmon smolts is bimodal, suggesting two groups of different sized fish are emigrating simultaneously. Scale aging will be required to assess what is contributing to this observed difference. However, it is likely be explained by: 
 
   1) Differences in age class between modes (e.g., Age-1 and Age-2 smolts), or; 
 
@@ -184,22 +182,47 @@ The length-frequency distribution for Sockeye Salmon smolts is bimodal, indicati
     # weekly_fl
 ```                  
 
-```{totalcatches, echo = FALSE, include = FALSE, message = FALSE}
+```{r total catches, out.width = "1500px", fig.cap = "**Total catches of Sockeye Salmon, Coho Salmon and Chum Salmon per day.**", echo = FALSE, message = FALSE, warning = FALSE}
 ## * Total Captures Plot ----
+    ## Prep Blank Date Data  
+    date_seq <- data.frame(Date = rep(seq(ymd('2024-04-15'), ymd('2024-06-15'), by = 'days'), each = 3)) %>%
+                mutate(Month = strftime(Date, format = "%m"),
+                       Month = as.numeric(Month),
+                       Week  = strftime(Date, format = "%V"),
+                       Species = rep(c("SK","CO","CM"), length.out = 186))
+
     ## Prepare Data
     running_tally <- catch_dat %>% 
                        group_by(Species, Date) %>%
                           summarize(Count = n()) %>% 
                           filter(Species == "SK" | Species== "CO" | Species == "CM")
+
     
+    daily_tally <- left_join(date_seq, running_tally, by = c("Date", "Species")) %>%
+                   mutate(Count = coalesce(Count, 0),
+                          Date  = as.Date(Date),
+                          Species = recode(as.factor(Species), 
+                                         SK        = "Sockeye Salmon",
+                                         CO        = "Coho Salmon",
+                                         CM        = "Chum Salmon"),
+                                       # CT        = "Coastal Cutthroat",
+                                       # 'DV-BT'   = "Dolly Varden",
+                                       # CC        = "Coastal Sculpin",
+                                       # Lamprey   = "Pacific Lamprey"),
+                         Species = factor(Species, 
+                                          levels = c("Sockeye Salmon", "Coho Salmon", "Chum Salmon")))
+                                                      # "Coastal Cutthroat", "Dolly Varden", "Coastal Sculpin", 
+                                                      # "Pacific Lamprey"))) 
+
     ## Prepare Plot
-    #run_tally <-
-      ggplot(running_tally) +
-                    geom_col(aes(x = Date, y = Count)) +
-                      labs(x = "Date", y = "Total Captures (# Fish))") +
-                      scale_x_continuous(breaks = seq(76, 166, by = 2))+
-                      scale_y_continuous(breaks = seq(0, 50, 2))+
-                      plottheme() +
-                      facet_grid(Species ~.)
+    ggplot(daily_tally) +
+            geom_col(aes(x = Date, y = Count)) +
+            labs(x = "Date", y = "Total Captures (# Fish)") +
+            scale_x_date(date_breaks = "1 week", date_labels = "%d-%b") +
+            plottheme() +
+            facet_grid(Species ~.)
+      
+            
+
 ```
 

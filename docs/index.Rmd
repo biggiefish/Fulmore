@@ -106,7 +106,7 @@ kable(tally.table,
       booktabs = T,
       align = c("c"),
       col.names = c("Species", "n", "Mean", "Min", "Max", "n", "Mean", "Min", "Max"),
-      caption = "**Table 1. Summary of total number and biological data collected of fish captured since April 15, 2024.**",
+      caption = "**Summary of total number and biological data collected of fish captured since April 15, 2024.**",
       digits = 1) %>%
   #column_spec(c(1, 3,10,17), bold = TRUE) %>%
   kable_styling("striped", full_width =  FALSE,
@@ -147,7 +147,7 @@ kable(SK_prop,
       booktabs = T,
       align = c("c"),
       col.names = c("Age Class", "n", "Prop (%)","Mean", "SE","Min", "Max", "Mean", "SE","Min", "Max"),
-      caption = "**Table 2. Size of Age-1 and Age-2 Sockeye Salmon captured to date.**",
+      caption = "** Size of Age-1 and Age-2 Sockeye Salmon captured to date.**",
       digits = 1) %>%
   #column_spec(c(1, 3,10,17), bold = TRUE) %>%
   kable_styling("striped", full_width =  FALSE,

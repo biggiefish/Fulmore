@@ -157,7 +157,6 @@ kable(SK_prop,
   add_header_above(c(" " = 3, "Fork Length" = 4, "Weight (g)" = 4)) 
 
 ```
-To date, it appears that the "Age-1" Sockeye Salmon smolts range in size from 78 mm to 118 mm while Age-2 smolts are greater than 120 mm.
 
 ```{r SK_FL, echo = FALSE, warning = FALSE, fig.cap = "Length-frequency distribution for Sockeye Salmon captured in the Fulmore River.", message = FALSE, out.width= "1500px"}
 ## Prepare Plots ----

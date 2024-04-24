@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 # Project Background
 
-This is a live document intended to share information about juvenile salmon captured in the Fulmore River by rotary screw trap. The Fulmore River is located in the traditional territory of the Tlowitsis First Nation, at the head of Port Neville, approximately 80 NE of Campbell River. The trap was installed on April 11-12 and will fish roughly 5-days a week (Monday to Friday) until June 15, 2024. All fish captured in the trap will be identified to species and measured for fork length. Biological samples will be collected from a subset of fish each day, including weight, scales and DNA samples. 
+This is a live document intended to share information about juvenile salmon captured in the Fulmore River by rotary screw trap. The Fulmore River is located in the traditional territory of the Tlowitsis First Nation, at the head of Port Neville, approximately 80 NE of Campbell River. The trap was installed on April 11-12 and will fish roughly 5-days a week (Monday to Friday) until June 15, 2024. All fish captured in the trap will be identified to species and measured for fork length. Biological samples will be collected from a subset of fish each day. Releases of marked fish will occur weekly to assess trap efficiency. 
 
 ```{r prepare working environment, echo=FALSE, warning=FALSE, message = FALSE}
 ## Load Packages
@@ -119,13 +119,45 @@ kable(tally.table,
 
 ## Sockeye Salmon
 
-The length-frequency distribution for Sockeye Salmon smolts is bimodal, suggesting two groups of different sized fish are emigrating simultaneously. Scale aging will be required to assess what is contributing to this observed difference. However, it is likely be explained by: 
+The length-frequency distribution for Sockeye Salmon smolts is bimodal, indicating two groups of different sized fish are emigrating simultaneously. Scale aging will be required to assess what is contributing to this observed size difference. However, it is likely best explained by a difference in age class between modes (e.g., Age-1 and Age-2 smolts), though it is also possible that some of the difference is explained by a difference in productivity between rearing environments (e.g., some smolts may be the same age, but larger smolts reared in more productive environments than smaller smolts).
 
-  1) Differences in age class between modes (e.g., Age-1 and Age-2 smolts), or; 
+```{r smolt proportion, echo = FALSE, warning = FALSE, message = FALSE}
+SK_AgeClass <- catch_dat %>% 
+              filter(Species == "SK") %>%
+              mutate(AgeClass =ifelse(Length>=120,"Age-2","Age-1"),
+                     TotalCount = n())
 
-  2) Differences in rearing environments (e.g., if smolts are the same age, but some are rearing in streams and some are rearing in the lake), or; 
+SK_prop <- SK_AgeClass %>%
+              group_by(AgeClass,TotalCount) %>%
+              summarize(Count  = n(),
+                        MeanFL = mean(Length, na.rm = TRUE),
+                        SEFL   = sd(Length, na.rm = TRUE)/sqrt(Count),
+                        MinFL  = min(Length, na.rm = TRUE),
+                        MaxFL  = max(Length, na.rm = TRUE),
+                        MeanWT = mean(Weight, na.rm = TRUE),
+                        SEWT   = sd(Weight, na.rm = TRUE)/sqrt(Count),
+                        MinWT  = min(Weight, na.rm = TRUE),
+                        MaxWT  = max(Weight, na.rm = TRUE))%>%
+              mutate(Prop = (Count/TotalCount)*100) %>% 
+              select("AgeClass" ,"Count","Prop","MeanFL", "SEFL", "MinFL", "MaxFL", "MeanWT","SEWT", "MinWT","MaxWT")
 
-  
+
+kable(SK_prop,
+      "html",
+      booktabs = T,
+      align = c("c"),
+      col.names = c("Age Class", "n", "Prop (%)","Mean", "SE","Min", "Max", "Mean", "SE","Min", "Max"),
+      caption = "**Table 2. Size of Age-1 and Age-2 Sockeye Salmon captured to date.**",
+      digits = 1) %>%
+  #column_spec(c(1, 3,10,17), bold = TRUE) %>%
+  kable_styling("striped", full_width =  FALSE,
+                position = "center", 
+                font_size = 12,
+                fixed_thead = TRUE) %>%
+  add_header_above(c(" " = 3, "Fork Length" = 4, "Weight (g)" = 4)) 
+
+```
+To date, it appears that the "Age-1" Sockeye Salmon smolts range in size from 78 mm to 118 mm while Age-2 smolts are greater than 120 mm.
 
 ```{r SK_FL, echo = FALSE, warning = FALSE, fig.cap = "Length-frequency distribution for Sockeye Salmon captured in the Fulmore River.", message = FALSE, out.width= "1500px"}
 ## Prepare Plots ----

@@ -234,6 +234,17 @@ sk_cond
 
 `r fig_nums("sk_cond", "Fork length and condition factor (k) of Sockeye Salmon captured in the Fulmore River.")`
 
+```{r}
+sk_condDate <- ggplot(SK_dat) + 
+              geom_point(aes(x = Date, y = Condition, color = AgeClass)) +
+              labs(x = "", y = "Condition Factor (k)") +
+              plottheme()
+sk_condDate
+```
+
+`r fig_nums("sk_condDate", "Condition Factor (k) of Sockeye Salmon over time in the Fulmore River.")`
+
+
 If we apply this information on condition factor to our original length vs weight plot we can see that our initial age assignment (Age 1 < 120 mm, Age 2 > 120 mm) may also need to take rearing environment into account. Specifically, fish originating from the presumably less productive rearing environment appear to be a smaller at age than fish originating from the more productive rearing environment.  
 
 ```{r SK scatter w. condition and rearing env,  echo = FALSE, message = FALSE, warning = FALSE}

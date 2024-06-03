@@ -274,7 +274,7 @@ The data suggests there is a physiological difference among smolts and that this
     ## All Catches
     all_fl.plot <- ggplot(SK_LF_data) +
                          geom_col(aes(x = Length, y = Count)) + 
-                         labs(x = "Fork Lenght (mm)", y = "Frequency (# Fish)") +
+                         labs(x = "Fork Length (mm)", y = "Frequency (# Fish)") +
                          scale_x_continuous(breaks = seq(70, 210, by = 2))+
                          scale_y_continuous(breaks = seq(0, 30, 2))+
                          plottheme() +
@@ -283,7 +283,7 @@ The data suggests there is a physiological difference among smolts and that this
     ## Faceted by Week
     SK_weekly_fl.plot <- ggplot(SK_total_weekly) + 
                       geom_col(aes(x = Length, y = Count)) + 
-                      labs(x = "Fork Lenght (mm)", y = "Frequency (# Fish)") +
+                      labs(x = "Fork Length (mm)", y = "Frequency (# Fish)") +
                       scale_x_continuous(breaks = seq(70, 210, by = 2))+
                       scale_y_continuous(breaks = seq(0, 50, 2))+
                       plottheme() +
@@ -325,7 +325,12 @@ Based on the above plots, it is reasonable to speculate that:
   5. The bulk of the migration occurred prior to trap installation, so it is unclear whether current results are representative of the entire run.
 
 
+
+
 # Coho Salmon
+
+The length-frequency plot for Coho also shows two distinct age classes; Coho Salmon fry were ~30-65 mm while parr were ~85 to 145 mm. Coho Salmon fry may have been moving to the estuary or to more downstream freshwater rearing habitats, while parr are almost certainly migrating towards the sea.  
+
 ```{r CO_FL, echo = FALSE, warning = FALSE, fig.cap = "Length-frequency distribution for all Coho Salmon captured in the Fulmore River.", message = FALSE, out.width= "1500px"}
 
 ## Prepare Plots ----
@@ -347,7 +352,7 @@ Based on the above plots, it is reasonable to speculate that:
     ## Faceted by Day
     co.fl.plot <- ggplot(co.all_catches) + 
                          geom_col(aes(x = Length, y = Count)) + 
-                         labs(x = "Fork Lenght (mm)", y = "Frequency (# Fish)") +
+                         labs(x = "Fork Length (mm)", y = "Frequency (# Fish)") +
                          scale_x_continuous(breaks = seq(0, 150, by = 5))+
                          # scale_y_continuous(breaks = seq(0, 50, 2))+
                          plottheme() +
@@ -361,11 +366,13 @@ Based on the above plots, it is reasonable to speculate that:
 ```  
 
 
-```{r CO_lenght_weight, echo = FALSE, warning = FALSE}
+```{r CO_Length_weight, echo = FALSE, warning = FALSE}
 co.plot_flwt <- ggplot(co.dat) +
                 geom_point(aes(x = Length, y = Weight)) +
-                labs (x = "Fork Length (mm)", y = "Weight (g)")
+                labs (x = "Fork Length (mm)", y = "Weight (g)") +
+                plottheme()
 
+co.plot_flwt
 ```
 
 

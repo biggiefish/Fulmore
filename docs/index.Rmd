@@ -8,7 +8,6 @@ output:
     code_folding: show
     toc: yes
     toc_float: yes
-
 ---
 
 ```{r setup, include=FALSE}
@@ -19,7 +18,7 @@ knitr::opts_chunk$set(echo = FALSE)
  
 This is a live document intended to present preliminary information about juvenile salmon captured in the Fulmore River by rotary screw trap. The Fulmore River is located in the traditional territory of the Tlowitsis First Nation, at the head of Port Neville, approximately 80 NE of Campbell River. The trap was installed on April 11-12 and will fish roughly 5-days a week (Monday to Friday) until June 15, 2024. All fish captured in the trap will be identified to species and measured for fork length. Biological samples will be collected from a subset of fish each day. Releases of marked fish will occur weekly to assess trap efficiency. 
 
-```{r prepare working environment, echo=FALSE, warning=FALSE, message = FALSE}
+```{r prepare working environment, echo=FALSE, warning = FALSE, message = FALSE}
 ## Load Packages
     library(tidyverse)
     library(tidyr)
@@ -38,9 +37,12 @@ setwd("C:/Users/evogt/R Analysis/EAV/GitHubMarkdown/Fulmore/docs/")
 
 ## Define and Load Input Files
   #1. PacFish Temp and Flow Data
-    catch_dat <- "Data/RST Catch/RST_Catch_2024.05.02.xlsx"
-    catch_dat <- read_excel(catch_dat)
-    
+    #catch_dat <- "Data/RST Catch/RST_Catch_2024.05.02.xlsx"
+    #catch_dat <- read_excel(catch_dat)
+
+    catch_dat <- "Data/RST Catch/StandardFishCollectionComplete_29389-1.xlsx"
+    data <- read_excel(catch_dat, sheet = "Fish Data")
+ 
   ## Define Output Locations
     plot.output <- "Plots/"
     model.output <- "Output/"
@@ -70,102 +72,188 @@ setwd("C:/Users/evogt/R Analysis/EAV/GitHubMarkdown/Fulmore/docs/")
 
 ```
 
-# Captures to Date
 
-Since April 15, the trap has fished for a total of `r (length(unique(catch_dat$Date)))` days, resulting in the capture of Sockeye Salmon, Coho Salmon, Chum Salmon, Coastal Cutthroat Trout, Dolly Varden Char, Pacific Lamprey and Sculpin (Cottidae spp.)
- 
-```{r tallytable, echo = FALSE, message = FALSE, warning = FALSE}
+```{r prep catch_dat,, echo = FALSE, message = FALSE, warning = FALSE}
 ## Prepare Data
-tally.table <- catch_dat %>% 
-                  mutate(Species = recode(as.factor(Species), 
-                                         SK        = "Sockeye Salmon",
-                                         CO        = "Coho Salmon",
-                                         CM        = "Chum Salmon",
-                                         CT        = "Coastal Cutthroat",
-                                         'DV-BT'   = "Dolly Varden",
-                                         CC        = "Coastal Sculpin",
-                                         Lamprey   = "Pacific Lamprey"),
-                         Species = factor(Species, 
-                                          levels = c("Sockeye Salmon", "Coho Salmon", "Chum Salmon", 
-                                                     "Coastal Cutthroat", "Dolly Varden", "Coastal Sculpin", 
-                                                      "Pacific Lamprey"))) %>%   
+catch_dat <- data %>%                   
+                 rename(Length = "Measured Length (mm)",
+                        Length.Est = "Estimated Length (mm)",
+                        Weight = "Weight (g)",
+                        Date = "Date (YYYY-MM-DD)") %>%
+                 mutate(Condition = 100*(Weight/(Length^3)),
+                        Species = recode(as.factor(Species), 
+                                             SK        = "Sockeye Salmon",
+                                             CO        = "Coho Salmon",
+                                             CM        = "Chum Salmon",
+                                             CT        = "Coastal Cutthroat",
+                                             'BT/DV'   = "Dolly Varden",
+                                             CC        = "Coastal Sculpin",
+                                             L   = "Pacific Lamprey"),
+                             Species = factor(Species, 
+                                              levels = c("Sockeye Salmon", "Coho Salmon", "Chum Salmon", 
+                                                         "Coastal Cutthroat", "Dolly Varden", "Coastal Sculpin", 
+                                                         "Pacific Lamprey")))
+    
+spp_summary <- catch_dat %>% 
                   group_by(Species) %>%
-                          summarize(count = n(),
-                                    nFL     = sum(Length >0, na.rm = TRUE),
-                                    meanFL  = mean(Length, na.rm = TRUE),
-                                    minFL   = min(Length, na.rm = TRUE),
-                                    maxFL   = max(Length, na.rm = TRUE),
-                                    nWT     = sum(Weight > 0, na.rm=TRUE),
-                                    meanWT  = mean(Weight, na.rm = TRUE),
-                                    minWT   = min(Weight, na.rm = TRUE),
-                                    maxWT   = max(Weight, na.rm = TRUE))
+                  summarize(Count = n())
 
-## Prepare Kable Table
-kable(tally.table,
-      "html",
-      booktabs = T,
-      align = c("c"),
-      col.names = c("Species", "Total \n Captures","n", "Mean", "Min", "Max", "n", "Mean", "Min", "Max"),
-      caption = "**Summary of total number and biological data collected of fish captured since April 15, 2024.",
-      digits = 1) %>%
-  #column_spec(c(1, 3,10,17), bold = TRUE) %>%
-  kable_styling("striped", full_width =  FALSE,
-                position = "center", 
-                font_size = 12,
-                fixed_thead = TRUE) %>%
-  add_header_above(c(" " = 2, "Fork Length" = 4, "Weight (g)" = 4)) 
 ```
 
+## Captures to Date ----
+
+Since April 15, the trap has fished for a total of `r (length(unique(catch_dat$Date)))` days, resulting in the capture of Sockeye Salmon, Coho Salmon, one Chum Salmon, Coastal Cutthroat Trout, Dolly Varden Char, Pacific Lamprey and Sculpin (Cottidae spp.).
+ 
+```{r tallytable, echo = FALSE, message = FALSE, warning = FALSE}
+## Prepare summary table
+    tally.table <- catch_dat %>% 
+                      group_by(Species) %>%
+                              summarize(count = n(),
+                                        nFL     = sum(Length >0, na.rm = TRUE),
+                                        meanFL  = mean(Length, na.rm = TRUE),
+                                        minFL   = min(Length, na.rm = TRUE),
+                                        maxFL   = max(Length, na.rm = TRUE),
+                                        nWT     = sum(Weight > 0, na.rm=TRUE),
+                                        meanWT  = mean(Weight, na.rm = TRUE),
+                                        minWT   = min(Weight, na.rm = TRUE),
+                                        maxWT   = max(Weight, na.rm = TRUE))
+
+## Prepare Kable Table
+    kable(tally.table,
+          "html",
+          booktabs = T,
+          align = c("c"),
+          col.names = c("Species", "Total \n Captures","n", "Mean", "Min", "Max", "n", "Mean", "Min", "Max"),
+          caption = "**Summary of total number and biological data collected of fish captured since April 15, 2024.",
+          digits = 1) %>%
+      #column_spec(c(1, 3,10,17), bold = TRUE) %>%
+      kable_styling("striped", full_width =  FALSE,
+                    position = "center", 
+                    font_size = 12,
+                    fixed_thead = TRUE) %>%
+      add_header_above(c(" " = 2, "Fork Length" = 4, "Weight (g)" = 4)) 
+```
+
+## Length Frequency Plots
+
+```{r length frequency plot for all coho and sockeye, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = "Length-frequency distribution for Sockeye Salmon captured in the Fulmore River.", message = FALSE, fig.dim=c(10,18)}
+## Total tally by fork length
+all_catches <- catch_dat %>% 
+               filter(Species %in% c("Sockeye Salmon" ,"Coho Salmon")) %>%
+               group_by(Species, Length) %>%
+                   summarize(Count = n()) %>%
+                   mutate(Date = "All Dates") %>%
+                   select("Species","Length","Count") 
+               
+
+all_catch_LFreq.plot <- ggplot(all_catches, aes(x = Length, y = Count))+
+                        geom_col() +
+                        labs(x = "Fork Length (mm)", y = "Frequency") + 
+                        scale_x_continuous(breaks = seq(20, 210, by = 20))+
+                        facet_grid(Species~.) +
+                        plottheme()
+
+all_catch_LFreq.plot
+```
 
 ## Sockeye Salmon
 
-The length-frequency distribution for Sockeye Salmon smolts is bimodal, indicating two groups of different sized fish are emigrating simultaneously. Scale aging will be required to assess what is contributing to this observed size difference. However, it is likely best explained by a difference in age class between modes (e.g., Age-1 and Age-2 smolts), though it is also possible that some of the difference is explained by a difference in productivity between rearing environments (e.g., some smolts may be the same age, but larger smolts reared in more productive environments than smaller smolts).
+The length-frequency distribution for Sockeye Salmon smolts is multimodal (separating at ~120 mm), indicating at least two groups of different sized fish are emigrating simultaneously. Scale aging will be required to verify whether this difference is due to difference age classes, though it is also possible that some of the variability is explained by a difference in productivity between rearing environments (e.g., smolts may be the same age, but smolts that reared in a more productive environment (e.g., Fulmore Lake) may be larger than smolts that reared in a tributary). 
+
+### Sockeye Salmon Investigations
+
+A plot of length vs weight may help explain what is going on. If this plot showed two distinct clusters it would be reasonable to assume that the difference in length was due primarily to differences in age between smolts (e.g., there would be a clear difference in the size of Age-1 and Age-2 fish). But interestingly, the length vs weight plot suggests that for a given fork length, there are considerable, and distinct, differences in condition between fish. Suggesting that there are likely two age-classes AND that fish are originating from multiple rearing environments - one that is more productive, and one that is relatively less productive).  
+
+```{r sockeye scatter plot, echo = FALSE, message = FALSE, warning = FALSE}
+SK_dat <- catch_dat %>% 
+              filter(Species == "Sockeye Salmon") %>%
+              mutate(AgeClass =ifelse(Length>=175,"Age-3",
+                                      ifelse(Length>120,"Age-2","Age-1")),
+                     TotalCount = n())
+
+ggplot(SK_dat) + 
+      geom_point(aes(x = Length, y = Weight, color = AgeClass)) +
+      plottheme()
+```
+
+This difference becomes more apparent when we plot Fulton's condition factor (k) vs length, which shows four distinct groups. Presumably representing the two age classes and two rearing environments. If we apply this information on condition factor to our original length vs weight plot we  
+
+```{r,  echo = FALSE, message = FALSE, warning = FALSE}
+ggplot(SK_dat) + 
+  geom_point(aes(x = Length, y = Condition, color = AgeClass)) +
+  labs(x = "Fork Length (mm)", y = "Condition Factor (k)")
+  plottheme()
+```
+
+```{r,  echo = FALSE, message = FALSE, warning = FALSE}
+SK_dat2 <- SK_dat %>%
+              mutate(RearEnv =ifelse(Condition>=0.00125,"Lake?","Tribs?"))
+
+ggplot(SK_dat2) + 
+      geom_point(aes(x = Length, y = Weight, color = AgeClass, shape = RearEnv)) +
+      scale_shape_manual(values = c(1, 3)) +
+      plottheme()
+
+```
 
 ```{r smolt proportion, echo = FALSE, warning = FALSE, message = FALSE}
 SK_AgeClass <- catch_dat %>% 
-              filter(Species == "SK") %>%
+              filter(Species == "Sockeye Salmon") %>%
               mutate(AgeClass =ifelse(Length>=120,"Age-2","Age-1"),
                      TotalCount = n())
 
-SK_prop <- SK_AgeClass %>%
+
+
+ggplot(SK_dat, aes(x = Length, y = Weight)) +
+  geom_point(aes(color = AgeClass, group = AgeClass)) +
+  labs(x = "Fork Length (mm)", y = "Weight (g)") +
+  plottheme()
+
+
+
+
+SK_prop <- SK_dat %>%
               group_by(AgeClass,TotalCount) %>%
               summarize(Count  = n(),
+                        nFL = sum(!is.na(Length)),
                         MeanFL = mean(Length, na.rm = TRUE),
                         SEFL   = sd(Length, na.rm = TRUE)/sqrt(Count),
                         MinFL  = min(Length, na.rm = TRUE),
                         MaxFL  = max(Length, na.rm = TRUE),
+                        nWT    = sum(!is.na(Weight)),
                         MeanWT = mean(Weight, na.rm = TRUE),
                         SEWT   = sd(Weight, na.rm = TRUE)/sqrt(Count),
                         MinWT  = min(Weight, na.rm = TRUE),
                         MaxWT  = max(Weight, na.rm = TRUE))%>%
               mutate(Prop = (Count/TotalCount)*100) %>% 
-              select("AgeClass" ,"Count","Prop","MeanFL", "SEFL", "MinFL", "MaxFL", "MeanWT","SEWT", "MinWT","MaxWT")
+              select("AgeClass" ,"Count","Prop","nFL", "MeanFL", "SEFL", "MinFL", "MaxFL", "nWT", "MeanWT","SEWT", "MinWT","MaxWT") %>%
+              filter(AgeClass != "NA")
 
 
 kable(SK_prop,
       "html",
       booktabs = T,
       align = c("c"),
-      col.names = c("Age Class", "n", "Prop (%)","Mean", "SE","Min", "Max", "Mean", "SE","Min", "Max"),
-      caption = "**Size of Age-1 and Age-2 Sockeye Salmon captured to date.**",
+      col.names = c("Age Class", "n", "Prop (%)","n" ,"Mean", "SE","Min", "Max", "n","Mean", "SE","Min", "Max"),
+      caption = "**Estimated Size of Age-1, Age-2 and Age-3 Sockeye Salmon captured in the Fulmore River in spring 2024.**",
       digits = 1) %>%
   #column_spec(c(1, 3,10,17), bold = TRUE) %>%
   kable_styling("striped", full_width =  FALSE,
                 position = "center", 
                 font_size = 12,
                 fixed_thead = TRUE) %>%
-  add_header_above(c(" " = 3, "Fork Length" = 4, "Weight (g)" = 4)) 
+  add_header_above(c(" " = 3, "Fork Length" = 5, "Weight (g)" = 5)) 
 
 ```
 
-```{r SK_FL, echo = FALSE, warning = FALSE, fig.cap = "Length-frequency distribution for Sockeye Salmon captured in the Fulmore River.", message = FALSE, out.width= "2000px"}
+```{r SK_FL, echo = FALSE, warning = FALSE, fig.cap = "Length-frequency distribution for Sockeye Salmon captured in the Fulmore River.", message = FALSE, fig.dim=c(10,18)}
 #, out.height="1200px"
 ## Prepare Plots ----
 ## * Length Frequency Plots  ----  
 ## ** Prepare Data
     ## Total tally by fork length
     all_catches <- catch_dat %>% 
-                      filter(Species == "SK") %>%
+                      filter(Species == "Sockeye Salmon") %>%
                           group_by(Length) %>%
                           summarize(Count = n()) %>%
                           mutate(Date = "All Dates") %>%
@@ -190,37 +278,77 @@ kable(SK_prop,
 
     ## Merge Total and Daily Tally              
     total_daily <- rbind(daily_catch, all_catches)
-    
+   
     ## Merge Total and Weekly Tally
     total_weekly <- rbind(weekly_catch, all_catches)
 
         
 ## ** Prepare Daily Length Frequency Plots
-    ## Faceted by Day
-    daily_fl.plot <- ggplot(total_daily) + 
+    ## All Catches
+    all_fl.plot <- ggplot(all_catches) +
                          geom_col(aes(x = Length, y = Count)) + 
                          labs(x = "Fork Lenght (mm)", y = "Frequency (# Fish)") +
-                         scale_x_continuous(breaks = seq(76, 186, by = 2))+
+                         scale_x_continuous(breaks = seq(70, 210, by = 2))+
+                         scale_y_continuous(breaks = seq(0, 30, 2))+
+                         plottheme() +
+                         theme(axis.text.x = element_text(angle = 45, vjust = 1.2, hjust = 1)) 
+ 
+    
+    ## Faceted by Day
+    daily_fl.plot <- ggplot(total_daily) +
+                         geom_col(aes(x = Length, y = Count)) +
+                         labs(x = "Fork Lenght (mm)", y = "Frequency (# Fish)") +
+                         scale_x_continuous(breaks = seq(70, 210, by = 2))+
                          scale_y_continuous(breaks = seq(0, 50, 2))+
                          plottheme() +
                          theme(axis.text.x = element_text(angle = 45, vjust = 1.2, hjust = 1)) +
                          facet_grid(Date ~.)
 
+
     ## Faceted by Week
     weekly_fl.plot <- ggplot(total_weekly) + 
-                    geom_col(aes(x = Length, y = Count)) + 
+                      geom_col(aes(x = Length, y = Count)) + 
                       labs(x = "Fork Lenght (mm)", y = "Frequency (# Fish)") +
-                      scale_x_continuous(breaks = seq(76, 186, by = 2))+
+                      scale_x_continuous(breaks = seq(70, 210, by = 2))+
                       scale_y_continuous(breaks = seq(0, 50, 2))+
                       plottheme() +
                       facet_grid(Date ~.)
     
 ## ** Select Figures to Display
-    
-    daily_fl.plot
-    
+
+    all_fl.plot
     # weekly_fl
 ```                  
+```{r plot of cumulative catches over time}
+    cum.sk <- catch_dat %>%
+              filter(Species == "SK") %>%
+                          group_by(Date) %>%
+                          summarize(Count = n(),
+                                    Prop  = Count/sum(Count),
+                                    cumsum = cumsum(Count)) %>%
+                          select("Date","Count", "Prop", "cumsum") %>%
+                          mutate(Date = as.character(Date))
+
+      cum.sk.plot <- ggplot(cum.sk) +
+                       geom_col(aes(x = Date, y = cumsum)) + 
+                       labs(x = "", y = "Frequency (# Fish)") +
+                       #scale_x_continuous(breaks = seq(70, 210, by = 2))+
+                       scale_y_continuous(breaks = seq(0, 250, 25))+
+                       plottheme()
+      
+      cum.sk.plot
+        
+
+```
+
+
+
+```{r}
+knitr::knit_exit()
+```
+
+
+
 
 
 ```{r total catches, out.width = "1500px", fig.cap = "Total catches of Sockeye Salmon, Coho Salmon and Chum Salmon per day.", echo = FALSE, message = FALSE, warning = FALSE}
@@ -236,7 +364,7 @@ kable(SK_prop,
     running_tally <- catch_dat %>% 
                        group_by(Species, Date) %>%
                           summarize(Count = n()) %>% 
-                          filter(Species == "SK" | Species== "CO" | Species == "CM")
+                          filter(Species == "Sockeye Salmon" | Species== "Coho Salmon")
 
     
     daily_tally <- left_join(date_seq, running_tally, by = c("Date", "Species")) %>%
@@ -244,8 +372,8 @@ kable(SK_prop,
                           Date  = as.Date(Date),
                           Species = recode(as.factor(Species), 
                                          SK        = "Sockeye Salmon",
-                                         CO        = "Coho Salmon",
-                                         CM        = "Chum Salmon"),
+                                         CO        = "Coho Salmon"),
+                                       # CM        = "Chum Salmon",
                                        # CT        = "Coastal Cutthroat",
                                        # 'DV-BT'   = "Dolly Varden",
                                        # CC        = "Coastal Sculpin",
@@ -297,6 +425,8 @@ kable(SK_prop,
     co.fl.plot
 
 ```  
+
+
 ```{r CO_lenght_weight, echo = FALSE, warning = FALSE}
  catch_dat %>% 
                       filter(Species == "CO") %>%

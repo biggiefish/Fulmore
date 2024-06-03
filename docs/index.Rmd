@@ -93,7 +93,7 @@ catch_dat <- data %>%
                              Species = factor(Species, 
                                               levels = c("Sockeye Salmon", "Coho Salmon", "Chum Salmon", 
                                                          "Coastal Cutthroat", "Dolly Varden", "Coastal Sculpin", 
-                                                         "Pacific Lamprey")))
+                                                         "Pacific Lamprey", "Three-Spine Stickleback")))
     
 spp_summary <- catch_dat %>% 
                   group_by(Species) %>%
@@ -103,7 +103,7 @@ spp_summary <- catch_dat %>%
 
 ## Captures to Date
 
-Since April 15, the trap has fished for a total of `r (length(unique(catch_dat$Date)))` days, resulting in the capture of Sockeye Salmon, Coho Salmon, one Chum Salmon, Coastal Cutthroat Trout, Dolly Varden Char, Pacific Lamprey and Sculpin (Cottidae spp.).
+Since April 15, the trap has fished for a total of `r (length(unique(catch_dat$Date)))` days, resulting in the capture of Sockeye Salmon, Coho Salmon, one Chum Salmon, Coastal Cutthroat Trout, Dolly Varden Char, Pacific Lamprey, Sculpin (Cottidae spp.) and sticklebacks.
  
 ```{r tallytable, echo = FALSE, message = FALSE, warning = FALSE}
 ## Prepare summary table
@@ -125,7 +125,7 @@ Since April 15, the trap has fished for a total of `r (length(unique(catch_dat$D
           booktabs = T,
           align = c("c"),
           col.names = c("Species", "Total \n Captures","n", "Mean", "Min", "Max", "n", "Mean", "Min", "Max"),
-          caption = "**Summary of total number and biological data collected of fish captured since April 15, 2024.",
+          caption = "Summary of total number and biological data collected of fish captured since April 15, 2024.",
           digits = 1) %>%
       #column_spec(c(1, 3,10,17), bold = TRUE) %>%
       kable_styling("striped", full_width =  FALSE,
@@ -135,19 +135,22 @@ Since April 15, the trap has fished for a total of `r (length(unique(catch_dat$D
       add_header_above(c(" " = 2, "Fork Length" = 4, "Weight (g)" = 4)) 
 ```
 
-## Length Frequency Plots
+# Sockeye Salmon
 
-```{r length frequency plot for all coho and sockeye, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = "Length-frequency distribution for Sockeye Salmon captured in the Fulmore River.", message = FALSE, fig.dim=c(10,18)}
+The length-frequency distribution for Sockeye Salmon smolts is multimodal (separating at ~120 mm), indicating at least two groups of different sized fish are emigrating simultaneously. Scale aging will be required to verify whether this difference is due to difference age classes, though it is also possible that some of the variability is explained by a difference in productivity between rearing environments (e.g., smolts may be the same age, but smolts that reared in a more productive environment (e.g., Fulmore Lake) may be larger than smolts that reared in a tributary). 
+
+```{r length frequency plot for all sockeye, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = "Length-frequency distribution for Sockeye Salmon captured in the Fulmore River.", message = FALSE, fig.dim=c(10,18)}
 ## Total tally by fork length
-all_catches <- catch_dat %>% 
-               filter(Species %in% c("Sockeye Salmon" ,"Coho Salmon")) %>%
+SK_LF_data <- catch_dat %>% 
+#all_catches <- catch_dat %>%   
+               filter(Species == "Sockeye Salmon") %>%
                group_by(Species, Length) %>%
                    summarize(Count = n()) %>%
                    mutate(Date = "All Dates") %>%
                    select("Species","Length","Count") 
                
 
-all_catch_LFreq.plot <- ggplot(all_catches, aes(x = Length, y = Count))+
+all_catch_LFreq.plot <- ggplot(SK_LF_data, aes(x = Length, y = Count))+
                         geom_col() +
                         labs(x = "Fork Length (mm)", y = "Frequency") + 
                         scale_x_continuous(breaks = seq(20, 210, by = 20))+
@@ -157,73 +160,13 @@ all_catch_LFreq.plot <- ggplot(all_catches, aes(x = Length, y = Count))+
 all_catch_LFreq.plot
 ```
 
-## Sockeye Salmon
-
-The length-frequency distribution for Sockeye Salmon smolts is multimodal (separating at ~120 mm), indicating at least two groups of different sized fish are emigrating simultaneously. Scale aging will be required to verify whether this difference is due to difference age classes, though it is also possible that some of the variability is explained by a difference in productivity between rearing environments (e.g., smolts may be the same age, but smolts that reared in a more productive environment (e.g., Fulmore Lake) may be larger than smolts that reared in a tributary). 
-
-### Sockeye Salmon Investigations
-
-A plot of length vs weight may help explain what is going on. If this plot showed two distinct clusters it would be reasonable to assume that the difference in length was due primarily to differences in age between smolts (e.g., there would be a clear difference in the size of Age-1 and Age-2 fish). But interestingly, the length vs weight plot suggests that for a given fork length, there are considerable, and distinct, differences in condition between fish. Suggesting that there are likely two age-classes AND that fish are originating from multiple rearing environments - one that is more productive, and one that is relatively less productive).  
-
-```{r sockeye scatter plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = "Fork length and weight of Sockeye Salmon captured in the Fulmore River."}
+```{r smolt proportion, echo = FALSE, warning = FALSE, message = FALSE}
 SK_dat <- catch_dat %>% 
               filter(Species == "Sockeye Salmon") %>%
               mutate(AgeClass =ifelse(Length>=175,"Age-3",
                                       ifelse(Length>120,"Age-2","Age-1")),
                      TotalCount = n()) %>%
               filter(!is.na(AgeClass))
-
-ggplot(SK_dat) + 
-      geom_point(aes(x = Length, y = Weight, color = AgeClass)) +
-      plottheme()
-```
-
-This difference becomes more apparent when we plot Fulton's condition factor (k) vs length. This figure (below) shows four distinct groups, presumably representing the two age classes and two rearing environments. 
-
-```{r,  echo = FALSE, message = FALSE, warning = FALSE,fig.cap = "Length and condition of Sockeye Salmon captured in the Fulmore River."}
-
-
-sk_cond <- ggplot(SK_dat) + 
-              geom_point(aes(x = Length, y = Condition, color = AgeClass)) +
-              labs(x = "Fork Length (mm)", y = "Condition Factor (k)") +
-              plottheme()
-
-sk_cond
-              
-```
-
-If we apply this information on condition factor to our original length vs weight plot we  
-
-```{r,  echo = FALSE, message = FALSE, warning = FALSE, fig.cap = "Fork length and weight of Sockeye Salmon captured in the Fulmore River, with emphasis on difference in condition."}
-SK_dat2 <- SK_dat %>%
-              mutate(RearingEnv = ifelse(Condition>=0.00115,"Enviro. A", "Enviro. B"),
-                     RearingEnv = factor(RearingEnv, 
-                                       levels = c("Enviro. A", "Enviro. B"))) %>%
-            filter(!is.na(RearingEnv))
-
-
-ggplot(SK_dat2) + 
-      geom_point(aes(x = Length, y = Weight, color = AgeClass, shape = RearingEnv)) +
-      scale_shape_manual(values = c(1, 3)) +
-      plottheme()
-
-```
-
-```{r smolt proportion, echo = FALSE, warning = FALSE, message = FALSE}
-SK_AgeClass <- catch_dat %>% 
-              filter(Species == "Sockeye Salmon") %>%
-              mutate(AgeClass =ifelse(Length>=120,"Age-2","Age-1"),
-                     TotalCount = n())
-
-
-
-ggplot(SK_dat, aes(x = Length, y = Weight)) +
-  geom_point(aes(color = AgeClass, group = AgeClass)) +
-  labs(x = "Fork Length (mm)", y = "Weight (g)") +
-  plottheme()
-
-
-
 
 SK_prop <- SK_dat %>%
               group_by(AgeClass,TotalCount) %>%
@@ -258,6 +201,49 @@ kable(SK_prop,
   add_header_above(c(" " = 3, "Fork Length" = 5, "Weight (g)" = 5)) 
 
 ```
+### Exploring the Sockeye Length-Frequency Distribution
+
+To assess why the length-frequency plot has a multimodal distribution we can length vs weight. If this plot showed two distinct clusters it would be reasonable to assume that the difference in length was due primarily to differences in age between smolts (e.g., there would be a clear difference in the size of Age-1 and Age-2 fish). But interestingly, this is not what the length vs weight plot shows. Instead, the plot shows that for a given fork length, there are considerable and distinct differences in weight. Suggesting that there are likely two age-classes AND that smolts from both age groups are emigrating from different rearing environments - one that appears to be more productive (heavier fish at length), and one that is relatively less productive (lighter fish at length).  
+
+```{r sockeye scatter plot, echo = FALSE, message = FALSE, warning = FALSE, fig.cap = "Fork length and weight of Sockeye Salmon captured in the Fulmore River."}
+
+
+ggplot(SK_dat) + 
+      geom_point(aes(x = Length, y = Weight, color = AgeClass)) +
+      plottheme()
+```
+
+This difference becomes more apparent when we plot Fulton's condition factor (k) vs length. This figure (below) shows four distinct groups, presumably representing the two age classes and two rearing environments. 
+
+```{r,  echo = FALSE, message = FALSE, warning = FALSE,fig.cap = "Length and condition of Sockeye Salmon captured in the Fulmore River."}
+sk_cond <- ggplot(SK_dat) + 
+              geom_point(aes(x = Length, y = Condition, color = AgeClass)) +
+              labs(x = "Fork Length (mm)", y = "Condition Factor (k)") +
+              plottheme()
+sk_cond
+              
+```
+
+If we apply this information on condition factor to our original length vs weight plot we get the plot below, which may indicate that our initial age assignment (Age 1 < 120 mm, Age 2 > 120 mm) may also need to take rearing environment into account. Specifically, fish originating from the less productive environment appear to be a smaller size (length and weight) at age than fish originating from the more productive environment.  
+
+```{r,  echo = FALSE, message = FALSE, warning = FALSE, fig.cap = "Fork length and weight of Sockeye Salmon captured in the Fulmore River, with emphasis on difference in condition."}
+SK_dat2 <- SK_dat %>%
+              mutate(RearingEnv = ifelse(Condition>=0.00115,"Enviro. A", "Enviro. B"),
+                     RearingEnv = factor(RearingEnv, 
+                                       levels = c("Enviro. A", "Enviro. B"))) %>%
+              filter(!is.na(RearingEnv))
+
+
+ggplot(SK_dat2) + 
+      geom_point(aes(x = Length, y = Weight, color = AgeClass, shape = RearingEnv)) +
+      scale_shape_manual(values = c(1, 3)) +
+      labs(x = "Fork Length (mm)", y = "Weight (g)") +
+      plottheme()
+
+```
+
+The data suggests there is a physiological difference among smolts and that this difference may be explained by rearing environment, competition, or some other factor that would limit growth. To see if there is a behavioural difference between groups we can re-plot the length-frequency figure to show the number of fish from each environment that were captured per week of trapping. A difference in migration timing between groups would further reinforce the assumption that these fish are originating from different environments.
+
 
 ```{r SK_FL, echo = FALSE, warning = FALSE, fig.cap = "Length-frequency distribution for Sockeye Salmon captured in the Fulmore River.", message = FALSE, fig.dim=c(10,18)}
 #, out.height="1200px"
@@ -265,40 +251,28 @@ kable(SK_prop,
 ## * Length Frequency Plots  ----  
 ## ** Prepare Data
     ## Total tally by fork length
-    all_catches <- catch_dat %>% 
-                      filter(Species == "Sockeye Salmon") %>%
+    SK_LF_data <- SK_dat2 %>% 
                           group_by(Length) %>%
                           summarize(Count = n()) %>%
                           mutate(Date = "All Dates") %>%
                           select("Date","Length","Count")
-    
-    ## Daily tally by fork length
-    daily_catch <- catch_dat %>%
-                      filter(Species == "SK") %>%
-                          group_by(Date, Length) %>%
-                          summarize(Count = n()) %>%
-                          select("Date","Length","Count") %>%
-                          mutate(Date = as.character(Date))
 
     ## Weekly tally by fork length
-    weekly_catch <- catch_dat %>%
-                      filter(Species == "SK") %>%
+    SK_weekly_catch <- SK_dat2 %>%
                       mutate(Date = isoweek(ymd(Date))) %>%  # convert date to weeknumber
-                      group_by(Date, Length) %>%
+                      group_by(Date, RearingEnv, Length) %>%
                         summarize(Count = n()) %>%
                         select("Date","Length","Count") %>%
                         mutate(Date = as.character(Date))
 
-    ## Merge Total and Daily Tally              
-    total_daily <- rbind(daily_catch, all_catches)
-   
     ## Merge Total and Weekly Tally
-    total_weekly <- rbind(weekly_catch, all_catches)
+    SK_total_weekly <- rbind(SK_weekly_catch, SK_LF_data) %>%
+                        filter(!is.na(RearingEnv))
 
         
 ## ** Prepare Daily Length Frequency Plots
     ## All Catches
-    all_fl.plot <- ggplot(all_catches) +
+    all_fl.plot <- ggplot(SK_LF_data) +
                          geom_col(aes(x = Length, y = Count)) + 
                          labs(x = "Fork Lenght (mm)", y = "Frequency (# Fish)") +
                          scale_x_continuous(breaks = seq(70, 210, by = 2))+
@@ -306,120 +280,67 @@ kable(SK_prop,
                          plottheme() +
                          theme(axis.text.x = element_text(angle = 45, vjust = 1.2, hjust = 1)) 
  
-    
-    ## Faceted by Day
-    daily_fl.plot <- ggplot(total_daily) +
-                         geom_col(aes(x = Length, y = Count)) +
-                         labs(x = "Fork Lenght (mm)", y = "Frequency (# Fish)") +
-                         scale_x_continuous(breaks = seq(70, 210, by = 2))+
-                         scale_y_continuous(breaks = seq(0, 50, 2))+
-                         plottheme() +
-                         theme(axis.text.x = element_text(angle = 45, vjust = 1.2, hjust = 1)) +
-                         facet_grid(Date ~.)
-
-
     ## Faceted by Week
-    weekly_fl.plot <- ggplot(total_weekly) + 
+    SK_weekly_fl.plot <- ggplot(SK_total_weekly) + 
                       geom_col(aes(x = Length, y = Count)) + 
                       labs(x = "Fork Lenght (mm)", y = "Frequency (# Fish)") +
                       scale_x_continuous(breaks = seq(70, 210, by = 2))+
                       scale_y_continuous(breaks = seq(0, 50, 2))+
                       plottheme() +
-                      facet_grid(Date ~.)
+                      facet_grid(Date~RearingEnv)
     
 ## ** Select Figures to Display
+    #all_fl.plot
+    SK_weekly_fl.plot
+``` 
 
-    all_fl.plot
-    # weekly_fl
-```                  
+
 ```{r plot of cumulative catches over time}
-    cum.sk <- catch_dat %>%
-              filter(Species == "SK") %>%
-                          group_by(Date) %>%
-                          summarize(Count = n(),
-                                    Prop  = Count/sum(Count),
-                                    cumsum = cumsum(Count)) %>%
-                          select("Date","Count", "Prop", "cumsum") %>%
-                          mutate(Date = as.character(Date))
+    cum.sk <- SK_dat2 %>%
+              group_by(Date, RearingEnv) %>%
+              summarize(Count = n(),
+                        Prop  = Count/sum(Count),
+                        cumsum = cumsum(Count)) %>%
+              select("Date","RearingEnv","Count", "Prop", "cumsum") %>%
+              mutate(Date = as.character(Date))
 
       cum.sk.plot <- ggplot(cum.sk) +
                        geom_col(aes(x = Date, y = cumsum)) + 
                        labs(x = "", y = "Frequency (# Fish)") +
                        #scale_x_continuous(breaks = seq(70, 210, by = 2))+
-                       scale_y_continuous(breaks = seq(0, 250, 25))+
-                       plottheme()
+                       #scale_y_continuous(breaks = seq(0, 250, 25))+
+                       plottheme() +
+                       facet_grid(RearingEnv~.)
       
       cum.sk.plot
         
 
 ```
+### Sockeye Salmon Data Summary
+Based on the above plots, it is reasonable to speculate that:
+  1. There are at least 2 age classes of Sockeye Salmon smolts emigrating from the Fulmore watershed.
+  2. Analysis of scale samples will be required to verify the age-bins assigned in this preliminary assessment.
+  3. Sockeye smolts appear to have originated from two locations, one of which produces fish in relatively better condition (i.e., higher weight for a given length).
+  4. There appears to be a noticeable difference in migration behaviours between fish originating from each environment. Higher condition fish appear to migrate later than poorer condition fish... 
+  5. The bulk of the migration occurred prior to trap installation, so it is unclear whether current results are representative of the entire run.
 
 
-
-```{r}
-knitr::knit_exit()
-```
-
-
-
-
-
-```{r total catches, out.width = "1500px", fig.cap = "Total catches of Sockeye Salmon, Coho Salmon and Chum Salmon per day.", echo = FALSE, message = FALSE, warning = FALSE}
-## * Total Captures Plot ----
-    ## Prep Blank Date Data  
-    date_seq <- data.frame(Date = rep(seq(ymd('2024-04-15'), ymd('2024-06-15'), by = 'days'), each = 3)) %>%
-                mutate(Month = strftime(Date, format = "%m"),
-                       Month = as.numeric(Month),
-                       Week  = strftime(Date, format = "%V"),
-                       Species = rep(c("SK","CO","CM"), length.out = 186))
-
-    ## Prepare Data
-    running_tally <- catch_dat %>% 
-                       group_by(Species, Date) %>%
-                          summarize(Count = n()) %>% 
-                          filter(Species == "Sockeye Salmon" | Species== "Coho Salmon")
-
-    
-    daily_tally <- left_join(date_seq, running_tally, by = c("Date", "Species")) %>%
-                   mutate(Count = coalesce(Count, 0),
-                          Date  = as.Date(Date),
-                          Species = recode(as.factor(Species), 
-                                         SK        = "Sockeye Salmon",
-                                         CO        = "Coho Salmon"),
-                                       # CM        = "Chum Salmon",
-                                       # CT        = "Coastal Cutthroat",
-                                       # 'DV-BT'   = "Dolly Varden",
-                                       # CC        = "Coastal Sculpin",
-                                       # Lamprey   = "Pacific Lamprey"),
-                         Species = factor(Species, 
-                                          levels = c("Sockeye Salmon", "Coho Salmon", "Chum Salmon")))
-                                                      # "Coastal Cutthroat", "Dolly Varden", "Coastal Sculpin", 
-                                                      # "Pacific Lamprey"))) 
-
-    ## Prepare Plot
-    daily_tally.plot <- ggplot(daily_tally) +
-                          geom_col(aes(x = Date, y = Count)) +
-                          labs(x = "Date", y = "Total Captures (# Fish)") +
-                          scale_x_date(date_breaks = "1 week", date_labels = "%d-%b") +
-                          plottheme() +
-                          facet_grid(Species ~.)
-    
-    daily_tally.plot
-
-```
-## Coho Salmon
+# Coho Salmon
 ```{r CO_FL, echo = FALSE, warning = FALSE, fig.cap = "Length-frequency distribution for all Coho Salmon captured in the Fulmore River.", message = FALSE, out.width= "1500px"}
 
 ## Prepare Plots ----
 ## * Length Frequency Plots  ----  
 ## ** Prepare Data
     ## Total tally by fork length
-    co.all_catches <- catch_dat %>% 
-                      filter(Species == "CO") %>%
-                          group_by(Length) %>%
-                          summarize(Count = n()) %>%
-                          mutate(Date = "All Dates") %>%
-                          select("Date","Length","Count")
+    co.dat <- catch_dat %>% 
+                      filter(Species == "Coho Salmon")
+
+
+    co.all_catches <- co.dat %>% 
+                      group_by(Length) %>%
+                      summarize(Count = n()) %>%
+                      mutate(Date = "All Dates") %>%
+                      select("Date","Length","Count")
     
     
 ## ** Prepare Daily Length Frequency Plots
@@ -441,10 +362,10 @@ knitr::knit_exit()
 
 
 ```{r CO_lenght_weight, echo = FALSE, warning = FALSE}
- catch_dat %>% 
-                      filter(Species == "CO") %>%
-                      ggplot() +
-                        geom_point(aes(x = Length, y = Weight))
+co.plot_flwt <- ggplot(co.dat) +
+                geom_point(aes(x = Length, y = Weight)) +
+                labs (x = "Fork Length (mm)", y = "Weight (g)")
+
 ```
 
 

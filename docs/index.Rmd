@@ -154,7 +154,8 @@ SK_LF_data <- catch_dat %>%
 all_catch_LFreq.plot <- ggplot(SK_LF_data, aes(x = Length, y = Count))+
                         geom_col() +
                         labs(x = "Fork Length (mm)", y = "Frequency") + 
-                        scale_x_continuous(breaks = seq(20, 210, by = 20))+
+                        scale_x_continuous(breaks = seq(20, 210, by = 5),
+                                           minor_breaks = seq(20, 210, by = 2))+
                         facet_grid(Species~.) +
                         plottheme()
 
@@ -204,9 +205,9 @@ kable(SK_prop,
 
 ```
 
-### Exploring the Sockeye Length-Frequency Distribution
+### Data Exploration
 
-To assess why the length-frequency plot has a multimodal distribution we can length vs weight. If this plot showed two distinct clusters it would be reasonable to assume that the difference in length was due primarily to differences in age between smolts (e.g., there would be a clear difference in the size of Age-1 and Age-2 fish). But interestingly, this is not what the length vs weight plot shows. Instead, the plot shows that for a given fork length, there are considerable and distinct differences in weight. Suggesting that there are likely two age-classes AND that smolts from both age groups are emigrating from different rearing environments - one that appears to be more productive (heavier fish at length), and one that is relatively less productive (lighter fish at length).  
+To assess why the length-frequency plot has a multimodal distribution we can plot length vs weight. If this plot showed two distinct clusters it would be reasonable to assume that the difference in length was due primarily to differences in age between smolts (e.g., there would be a clear difference in the size of Age-1 and Age-2 fish). But interestingly, this is not what the length vs weight plot shows. Instead, the plot shows distinct differences in weight for each length, suggesting that there are likely two age-classes AND that smolts from both age groups are emigrating from different rearing environments - one that appears to be more productive (where fish are heavier fish at given length), and one that is relatively less productive (where fish are lighter at a given length).  
 
 ```{r sockeye scatter plot, echo = FALSE, message = FALSE, warning = FALSE}
 
@@ -217,6 +218,7 @@ SK_scatter <- ggplot(SK_dat) +
 SK_scatter
 
 ```
+
 `r fig_nums("SK_scatter", "Fork length and weight of Sockeye Salmon captured in the Fulmore River.")`
 
 This difference becomes more apparent when we plot Fulton's condition factor (k) vs length. This figure (below) shows four distinct groups, presumably representing the two age classes and two rearing environments. 
@@ -227,7 +229,9 @@ sk_cond <- ggplot(SK_dat) +
               labs(x = "Fork Length (mm)", y = "Condition Factor (k)") +
               plottheme()
 sk_cond
+
 ```
+
 `r fig_nums("sk_cond", "Fork length and condition factor (k) of Sockeye Salmon captured in the Fulmore River.")`
 
 
@@ -339,7 +343,7 @@ Based on the above plots, it is reasonable to speculate that:
 
 # Coho Salmon
 
-The length-frequency plot for Coho also shows two distinct age classes; Coho Salmon fry were ~30-65 mm while parr were ~85 to 145 mm. Coho Salmon fry may have been moving to the estuary or to more downstream freshwater rearing habitats, while parr are almost certainly migrating towards the sea.  
+The length-frequency plot for Coho Salmon also shows two distinct age classes; Coho Salmon fry were ~30-65 mm while parr were ~85 to 145 mm. Coho Salmon fry may have been moving to the estuary or to more downstream freshwater rearing habitats, while parr are almost certainly migrating towards the sea. Similar to the length weight plot for Sockeye there appears to be a subset of Coho Salmon that are relatively poorer condition, though the majority appear to be of similar condition.    
 
 ```{r CO_FL, echo = FALSE, warning = FALSE, message = FALSE, out.width= "1500px"}
 

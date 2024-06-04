@@ -138,7 +138,7 @@ Since April 15, the trap has fished for a total of `r (length(unique(catch_dat$D
 
 # Sockeye Salmon
 
-The length-frequency distribution for Sockeye Salmon smolts is multimodal (separating at ~120 mm), indicating at least two groups of different sized fish are emigrating simultaneously. Scale aging will be required to verify whether this difference is due to difference age classes, though it is also possible that some of the variability is explained by a difference in productivity between rearing environments (e.g., smolts may be the same age, but smolts that reared in a more productive environment (e.g., Fulmore Lake) may be larger than smolts that reared in a tributary). 
+The length-frequency distribution for Sockeye Salmon smolts is multimodal (separating at ~120 mm), indicating at least two groups of different sized fish are emigrating simultaneously. Scale aging will be required to verify whether this difference is due to different age classes, though it is also possible that some of the variability is explained by more than just age, such as a difference in rearing environments, life history strategies, or even sampling error! 
 
 ```{r length frequency plot for all sockeye, echo = FALSE, message = FALSE, warning = FALSE, fig.dim=c(10,8)}
 ## Total tally by fork length
@@ -207,7 +207,7 @@ kable(SK_prop,
 
 ### Data Exploration
 
-To assess why the length-frequency plot has a multimodal distribution we can plot length vs weight. If this plot showed two distinct clusters it would be reasonable to assume that the difference in length was due primarily to differences in age between smolts (e.g., there would be a clear difference in the size of Age-1 and Age-2 fish). But interestingly, this is not what the length vs weight plot shows. Instead, the plot shows distinct differences in weight for each length, suggesting that there are likely two age-classes AND that smolts from both age groups are emigrating from environments with different rearing conditions - one that appears to be more productive (where fish are heavier at a given length), and one that is relatively less productive (where fish are lighter at a given length).  
+To assess why the length-frequency plot has a multimodal distribution we can plot length vs weight. If this plot showed two distinct clusters it would be reasonable to assume that the difference in length was due primarily to differences in age between smolts (e.g., there would be a clear difference in the size of Age-1 and Age-2 fish). But interestingly, this is not what the length vs weight plot shows. Instead, the plot shows distinct differences in weight for each length, suggesting that there are likely two age-classes AND that smolts from both age classes are of different condition - one group that appears is better condition (where fish are heavier at a given length), and one group that is relatively poorer condition (where fish are lighter at a given length). The reason for this difference in condition is unknown.   
 
 ```{r sockeye scatter plot, echo = FALSE, message = FALSE, warning = FALSE}
 
@@ -221,7 +221,7 @@ SK_scatter
 
 `r fig_nums("SK_scatter", "Fork length and weight of Sockeye Salmon captured in the Fulmore River.")`
 
-This difference becomes more apparent when we plot Fulton's condition factor (k) vs length. This figure (below) shows four distinct groups, and there looks to be a clear separation in condition factor at ~ 0.00115. Though very much a speculation, this break may be due to a difference in environmental conditions between rearing environments. 
+This difference between groups becomes more apparent when we plot Fulton's condition factor (k) vs length. This figure (below) shows four distinct groups, and there looks to be a clear separation in condition factor at ~ 0.00115. Though very much a speculation, this break may be due to a difference in environmental conditions between rearing environments. 
 
 ```{r SK_ConditionScatter, echo=FALSE, message=FALSE, warning=FALSE}
 sk_cond <- ggplot(SK_dat) + 
@@ -245,13 +245,13 @@ sk_condDate
 `r fig_nums("sk_condDate", "Condition Factor (k) of Sockeye Salmon over time in the Fulmore River.")`
 
 
-If we apply this information on condition factor to our original length vs weight plot we can see that our initial age assignment (Age 1 < 120 mm, Age 2 > 120 mm) may also need to take rearing environment into account. Specifically, fish originating from the presumably less productive rearing environment appear to be a smaller at age than fish originating from the more productive rearing environment.  
+If we apply this information on condition factor to our original length vs weight plot we can see that our initial age assignment (Age 1 < 120 mm, Age 2 > 120 mm) may also need to take groupings into account. Specifically, poorer condition fish in Group B appear to be a smaller at age than better condition fish in Group B.
 
 ```{r SK scatter w. condition and rearing env,  echo = FALSE, message = FALSE, warning = FALSE}
 SK_dat2 <- SK_dat %>%
-              mutate(RearingEnv = ifelse(Condition>=0.00115,"Enviro. A", "Enviro. B"),
+              mutate(RearingEnv = ifelse(Condition>=0.00115,"Group A", "Group B"),
                      RearingEnv = factor(RearingEnv, 
-                                       levels = c("Enviro. A", "Enviro. B"))) %>%
+                                       levels = c("Group A", "Group B"))) %>%
               filter(!is.na(RearingEnv))
 
 
@@ -264,9 +264,9 @@ SK_RearEnv<- ggplot(SK_dat2) +
 SK_RearEnv
 ```
 
-`r fig_nums("SK_RearEnv", "Fork length and weight of Sockeye Salmon captured in the Fulmore River, with emphasis on condition factor and potential differences in rearing environments.")`
+`r fig_nums("SK_RearEnv", "Fork length and weight of Sockeye Salmon captured in the Fulmore River, with emphasis on condition factor.")`
 
-The data suggests there is a physiological difference among smolts in terms of size and condition at age, which presumably is due to a difference in environmental conditions between rearing environments. Though not definitive, differences in behaviour would also be an indication that that these fish may be originating from different environments. To see if there is evidence for a behavioural difference between groups we can re-plot the length-frequency figure to show the number of fish from each 'environment' that were captured per week of trapping and look at the total number of fish from each group originating from each 'environment'. 
+The data suggests there is a physiological difference among smolts in terms of size and condition at age. Though not definitive, differences in behaviour would also be an indication that that there may be environmental or behavioural factors influencing observed differences in condition. To see if there is evidence for a behavioural difference between groups we can re-plot the length-frequency figure to show the number of fish from each group that were captured per week of trapping and look at the total number of fish from each group originating from each group. 
 
 
 ```{r SK_FL, echo = FALSE, warning = FALSE, message = FALSE, fig.dim=c(10,18)}
@@ -323,7 +323,7 @@ The data suggests there is a physiological difference among smolts in terms of s
     SK_weekly_fl.plot
 ``` 
 
-`r fig_nums("SK_weekly_fl.plot", "Length-Frequency plot showing number of Sockeye Salmon captured per week from environments assumed to be relatively more and less productive (Environment A and B, respectively).")`
+`r fig_nums("SK_weekly_fl.plot", "Length-Frequency plot showing number of Sockeye Salmon captured per week from Group A (better condition) and Group B (poorer condition).")`
 
 
 ```{r plot of cumulative catches over time, echo = FALSE, warning = FALSE, message = FALSE,}
@@ -346,18 +346,17 @@ The data suggests there is a physiological difference among smolts in terms of s
       cum.sk.plot
 ```
 
-`r fig_nums("cum.sk.plot", "Number of Sockeye Salmon captured per day from environments assumed to be relatively more and less productive (Environment A and B, respectively).")`
+`r fig_nums("cum.sk.plot", "Number of Sockeye Salmon captured per day from Group A and Group B.")`
 
-Well look at that! Though our data is incomplete and we clearly missed the start of the migration, preliminary results suggest that there may be a difference in migration timing between fish from each environment; specifically, better condition fish appear to migrate earlier than fish in poorer condition.
+Well look at that! Though our data is incomplete and we clearly missed the start of the migration period, the preliminary results suggest that there may be a difference in migration timing between fish from each group; specifically, better condition fish (Group A) appear to migrate earlier than poorer condition fish from Group B.
 
 
 ### Sockeye Salmon Data Summary
 Based on the above plots, it is reasonable to speculate that:
   1. There are at least 2 age classes of Sockeye Salmon smolts emigrating from the Fulmore watershed.
   2. Analysis of scale samples will be required to verify the age-bins assigned in this preliminary assessment.
-  3. Sockeye smolts appear to have originated from two locations, one of which produces fish in relatively better condition (i.e., higher weight for a given length).
-  4. There appears to be a noticeable difference in migration behaviours between fish originating from each environment. Higher condition fish appear to migrate later than poorer condition fish... 
-  5. The bulk of the migration occurred prior to trap installation, so it is unclear whether current results are representative of the entire run.
+  3. Sockeye smolts can be grouped by condition into two genearl groups: 1) better condition fish that appear to migrate earlier, and 2) relatively poorer condition fish that migrate later.  
+  4. The bulk of the migration occurred prior to trap installation, so it is unclear whether current results are representative of the entire run.
 
 
 # Coho Salmon

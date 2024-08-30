@@ -44,7 +44,7 @@ setwd("C:/Users/evogt/R Analysis/EAV/GitHubMarkdown/Fulmore/docs/")
     #catch_dat <- "Data/RST Catch/RST_Catch_2024.05.02.xlsx"
     #catch_dat <- read_excel(catch_dat)
 
-    catch_dat <- "Data/RST Catch/StandardFishCollectionComplete_29492-1.xlsx"
+    catch_dat <- "Data/RST Catch/StandardFishCollectionComplete_30125-1.xlsx"
     data <- read_excel(catch_dat, sheet = "Fish Data")
  
   ## Define Output Locations
@@ -79,7 +79,6 @@ setwd("C:/Users/evogt/R Analysis/EAV/GitHubMarkdown/Fulmore/docs/")
 
 ```{r prep catch_dat,, echo = FALSE, message = FALSE, warning = FALSE}
 ## Prepare Data
-
 catch_dat <- data %>%
                  filter(Year == 2024,
                         Species != "NFC") %>%
